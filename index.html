@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zanetti-Rahman Family Tree</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Core Styles for the Family Tree Container --- */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a0a;
+        }
+        
+        /* === PHONE PORTRAIT FIT (≤500px) — KEEP CARDS SIDE-BY-SIDE ======= */
+        @media (max-width: 500px) {
+            /* 1. give the wrapper the full viewport width */
+            .family-tree {
+                display: block; /* was inline-flex – this kills the auto-widening */
+                width: 100%;
+                padding: 0 3vw; /* slim side gutters (≈12-15px) */
+                box-sizing: border-box;
+            }
+            
+            /* 2. couple row keeps bar + ring but drops outer margins */
+            .couple {
+                display: flex;
+                justify-content: space-between;
+                gap: 6vw; /* space *between* the two cards (≈24px) */
+                padding-top: 30px;
+            }
+            
+            .person {
+                margin: 0;
+                flex: 1 1 0;
+            } /* no side margins, cards share the row */
+            
+            /* Single person (Nasir) needs centering */
+            .generation > .person:only-child {
+                margin: 0 auto;
+                flex: 0 0 auto;
+            }
+            
+            /* 3. card width = calc(50% – gap/2) so 2 cards == 100% */
+            .person-details {
+                width: 100%;
+                min-width: 0; /* allow full shrink */
+                box-sizing: border-box; /* borders counted in the math */
+                padding: 1rem 1rem;
+            }
+            
+            /* 4. keep horizontal bar flush with card edges */
+            .couple::before {
+                left: 0;
+                right: 0;
+            }
+            
+            /* 5. micro-downsize icons & text so nothing wraps */
+            .person-emblem {
+                width: 24px;
+                height: 24px;
+                top: -12px;
+            }
+            
+            .person-emblem svg {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .person-name {
+                font-size: 1.2rem;
+            }
+            
+            .person-title {
+                font-size: 0.7rem;
+            }
+            
+            .emblem-description {
+                font-size: 0.65rem;
+            }
+            
+            /* Adjust generation spacing for mobile */
+            .generation {
+                margin-bottom: 60px;
+            }
+            
+            /* Shorter vertical lines on mobile */
+            .person.has-descendant::after,
+            .couple.has-descendant::after {
+                bottom: -60px;
+                height: 60px;
+            }
+        }
+        
+        .family-tree-section {
+            background-color: #0a0a0a;
+            color: #E8E8E8;
+            font-family: 'Inter', sans-serif;
+            padding: 5rem 1rem;
+            text-align: center;
+            overflow-x: auto; /* Allows horizontal scrolling on small screens */
+            min-height: 100vh;
+        }
+        
+        .tree-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            color: #C9A961;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .tree-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: #888;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 5rem;
+            text-align: center;
+            width: 100%;
+        }
+        
+        /* --- Main Tree Structure --- */
+        .family-tree {
+            display: inline-flex; /* Use inline-flex to allow scrolling */
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .generation {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 80px; /* Space between generations */
+            position: relative;
+        }
+        
+        .person {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 20px; /* Space between people in a couple */
+            position: relative;
+        }
+        
+        /* Vertical line from a single person down */
+        .person.has-descendant::after {
+            content: '';
+            position: absolute;
+            bottom: -80px;
+            left: 50%;
+            width: 2px;
+            height: 80px;
+            background: rgba(201, 169, 97, 0.4);
+            transform: translateX(-1px);
+        }
+        
+        .couple {
+            display: flex;
+            position: relative;
+            padding-top: 30px; /* Space for the line from parent */
+        }
+        
+        /* Horizontal line connecting a couple */
+        .couple::before {
+            content: '';
+            position: absolute;
+            top: 55px; /* Aligns with the middle of the person box */
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(201, 169, 97, 0.4);
+            z-index: 0;
+        }
+        
+        /* Vertical line from a couple down */
+        .couple.has-descendant::after {
+            content: '';
+            position: absolute;
+            bottom: -80px;
+            left: 50%;
+            width: 2px;
+            height: 80px;
+            background: rgba(201, 169, 97, 0.4);
+            transform: translateX(-1px);
+        }
+        
+        /* Marriage emblem floating on the connector bar */
+        .marriage-icon {
+            position: absolute;
+            top: 55px; /* exactly matches .couple::before top */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #0a0a0a; /* same backdrop as person boxes */
+            padding: 0 4px; /* gives the SVG breathing room */
+            z-index: 2; /* floats above the connector */
+            transition: transform 0.3s ease;
+        }
+        
+        .marriage-icon svg {
+            width: 22px;
+            height: 22px;
+            display: block;
+            pointer-events: none;
+        }
+        
+        .couple:hover .marriage-icon {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        
+        .person-details {
+            border: 1px solid #C9A961;
+            padding: 1.2rem 1.5rem;
+            min-width: 220px;
+            background-color: #0a0a0a;
+            position: relative;
+            z-index: 1; /* Keep details above lines */
+            transition: all 0.3s ease;
+            touch-action: manipulation; /* Prevents delay on all devices */
+            cursor: pointer;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* Remove blue highlight on mobile */
+        }
+        
+        .person-details:hover {
+            border-color: #F0D290;
+            box-shadow: 0 0 20px rgba(201, 169, 97, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .person-emblem {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #0a0a0a;
+            padding: 0 12px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .person-emblem svg {
+            width: 24px;
+            height: 24px;
+            fill: #C9A961;
+        }
+        
+        .person-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin: 0;
+            line-height: 1.2;
+        }
+        
+        .person-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            font-style: italic;
+            color: #888;
+            margin-top: 0.3rem;
+        }
+        
+        /* Emblem Description - Hidden by default */
+        .emblem-description {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.75rem;
+            font-style: italic;
+            color: #C9A961;
+            opacity: 0;
+            transform: translateY(-5px);
+            transition: all 0.4s ease;
+            margin-top: 0.5rem;
+            letter-spacing: 0.05em;
+            pointer-events: none; /* Prevent description from interfering with clicks */
+        }
+        
+        /* Show emblem description on hover - desktop only */
+        @media (hover: hover) and (pointer: fine) {
+            .person-details:hover .emblem-description {
+                opacity: 0.8;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Active state works on all devices */
+        .person-details.active .emblem-description {
+            opacity: 0.8;
+            transform: translateY(0);
+        }
+        
+        /* Mobile-specific optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .person-details {
+                -webkit-tap-highlight-color: transparent;
+                -webkit-user-select: none;
+                user-select: none;
+                cursor: pointer;
+            }
+            
+            /* Force active state to work on mobile */
+            .person-details.active .emblem-description {
+                opacity: 0.8 !important;
+                transform: translateY(0) !important;
+            }
+        }
+        
+        /* === MOBILE SHRINK-TO-FIT (≤ 550px) =============================== */
+        @media (max-width: 550px) {
+            /* Let the section stretch full-width and centre the column */
+            .family-tree-section {
+                padding: 4rem 0 6rem;
+            }
+            
+            .family-tree {
+                width: 100%;
+                padding: 0 4vw; /* responsive side gutters (≈17px on iPhone 15 PM) */
+            }
+            
+            /* --- CARD DIMENSIONS -------------------------------------------- */
+            .person-details {
+                flex: 1 1 0; /* flex-shrink + grow */
+                min-width: 38vw; /* 2 × 38vw + 2 × 4vw gutters ≈ 100vw */
+                max-width: 190px; /* stop runaway growth on small tablets */
+                padding: 0.8rem 0.9rem;
+            }
+            
+            .person {
+                margin: 0 4vw; /* keep equal padding left/right */
+            }
+            
+            /* --- TYPOGRAPHY SCALE ------------------------------------------- */
+            .person-emblem {
+                width: 24px;
+                height: 24px;
+                top: -12px;
+            }
+            
+            .person-emblem svg {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .person-name {
+                font-size: 1.15rem;
+            }
+            
+            .person-title {
+                font-size: 0.68rem;
+            }
+            
+            .emblem-description {
+                font-size: 0.65rem;
+            }
+            
+            /* --- LINE LENGTHS ---------------------------------------------- */
+            .person.has-descendant::after,
+            .couple.has-descendant::after {
+                bottom: -52px;
+                height: 52px;
+            }
+            
+            /* Reduce generation spacing a hair to keep everything on screen */
+            .generation {
+                margin-bottom: 68px;
+            }
+            
+            /* Marriage rings slightly smaller */
+            .marriage-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="family-tree-section">
+    <h2 class="tree-title">A Bloodline of Reign</h2>
+    <p class="tree-subtitle">Power Is Inherited. But So Is Ruin.</p>
+    <div class="family-tree">
+        <div class="generation">
+             <div class="person has-descendant">
+                <div class="person-details">
+                    <span class="person-emblem" title="The Great-Grandfather's Emblem: A Peacock Feather">
+                        <svg viewBox="0 0 24 24">
+                            <!-- Peacock Feather with eye detail -->
+                            <path d="M12 2 Q10 8 10 12 Q10 16 11 22 L13 22 Q14 16 14 12 Q14 8 12 2" fill="#C9A961" opacity="0.3"/>
+                            <ellipse cx="12" cy="7" rx="5" ry="6" fill="none" stroke="#C9A961" stroke-width="1"/>
+                            <ellipse cx="12" cy="7" rx="3.5" ry="4" fill="#C9A961" opacity="0.2"/>
+                            <ellipse cx="12" cy="7" rx="2.5" ry="3" fill="none" stroke="#C9A961" stroke-width="0.5"/>
+                            <circle cx="12" cy="7" r="1.5" fill="#C9A961"/>
+                            <path d="M12 13 L12 22" stroke="#C9A961" stroke-width="1.5"/>
+                            <path d="M8 15 Q12 13 16 15" stroke="#C9A961" stroke-width="0.5" fill="none"/>
+                            <path d="M7 17 Q12 15 17 17" stroke="#C9A961" stroke-width="0.5" fill="none"/>
+                            <path d="M6 19 Q12 17 18 19" stroke="#C9A961" stroke-width="0.5" fill="none"/>
+                        </svg>
+                    </span>
+                    <p class="person-name">Nasir Rahman</p>
+                    <p class="person-title">The Great-Grandfather</p>
+                    <p class="emblem-description">The Signature of the Ghost</p>
+                </div>
+            </div>
+        </div>
+        <div class="generation">
+            <div class="couple has-descendant">
+                <!-- Marriage glyph -->
+                <span class="marriage-icon" title="Bonded in covenant">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <!-- Two interlocking rings -->
+                        <circle cx="9" cy="12" r="5" fill="none" stroke="#C9A961" stroke-width="2"/>
+                        <circle cx="15" cy="12" r="5" fill="none" stroke="#C9A961" stroke-width="2"/>
+                    </svg>
+                </span>
+                <div class="person">
+                    <div class="person-details">
+                        <span class="person-emblem" title="The Grandfather's Emblem: A Cross">
+                            <svg viewBox="0 0 24 24">
+                                <!-- Cross Pattée with curved concave sides -->
+                                <path d="M8 3 L16 3 C14 10 14 10 13 11 L21 8 L21 16 C14 14 14 14 13 13 L16 21 L8 21 C10 14 10 14 11 13 L3 16 L3 8 C10 10 10 10 11 11 L8 3 Z" 
+                                      fill="#C9A961"/>
+                            </svg>
+                        </span>
+                        <p class="person-name">Carmelo Zanetti</p>
+                        <p class="person-title">The Grandfather</p>
+                        <p class="emblem-description">The Weight of Faith</p>
+                    </div>
+                </div>
+                <div class="person">
+                    <div class="person-details">
+                        <span class="person-emblem" title="The Grandmother's Emblem: A Book">
+                            <svg viewBox="0 0 24 24">
+                                <!-- Open Book with pages -->
+                                <path d="M3 5 Q3 3 5 3 L11 3 L11 18 L5 18 Q3 18 3 16 Z" fill="#C9A961" opacity="0.8"/>
+                                <path d="M21 5 Q21 3 19 3 L13 3 L13 18 L19 18 Q21 18 21 16 Z" fill="#C9A961" opacity="0.8"/>
+                                <path d="M12 3 L12 18" stroke="#C9A961" stroke-width="1"/>
+                                <path d="M3 19 Q3 21 5 21 L12 21 L19 21 Q21 21 21 19" stroke="#C9A961" stroke-width="1.5" fill="none"/>
+                                <!-- Page lines -->
+                                <path d="M5 7 L10 7 M5 9 L10 9 M5 11 L10 11 M5 13 L10 13" stroke="#0a0a0a" stroke-width="0.5"/>
+                                <path d="M14 7 L19 7 M14 9 L19 9 M14 11 L19 11 M14 13 L19 13" stroke="#0a0a0a" stroke-width="0.5"/>
+                            </svg>
+                        </span>
+                        <p class="person-name">Layla Rahman</p>
+                        <p class="person-title">The Grandmother</p>
+                        <p class="emblem-description">The Poetry of Transformation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="generation">
+            <div class="couple has-descendant">
+                <!-- Marriage glyph -->
+                <span class="marriage-icon" title="Bonded in covenant">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <!-- Two interlocking rings -->
+                        <circle cx="9" cy="12" r="5" fill="none" stroke="#C9A961" stroke-width="2"/>
+                        <circle cx="15" cy="12" r="5" fill="none" stroke="#C9A961" stroke-width="2"/>
+                    </svg>
+                </span>
+                <div class="person">
+                    <div class="person-details">
+                        <span class="person-emblem" title="The Father's Emblem: A Stiletto Dagger">
+                            <svg viewBox="0 0 24 24">
+                                <!-- Stiletto Dagger -->
+                                <!-- Pommel -->
+                                <circle cx="12" cy="20" r="1.5" fill="#C9A961"/>
+                                <!-- Handle/Grip -->
+                                <rect x="11" y="16" width="2" height="4" fill="#C9A961" opacity="0.8"/>
+                                <path d="M11.5 16 L11.5 19.5 M12.5 16 L12.5 19.5" stroke="#0a0a0a" stroke-width="0.3"/>
+                                <!-- Crossguard -->
+                                <rect x="8" y="15" width="8" height="1" rx="0.5" fill="#C9A961"/>
+                                <!-- Blade -->
+                                <path d="M12 15 L11 14 L11 4 L12 2 L13 4 L13 14 L12 15 Z" 
+                                      fill="#C9A961" opacity="0.95"/>
+                                <!-- Blade center line/fuller -->
+                                <path d="M12 3 L12 14" stroke="#0a0a0a" stroke-width="0.3" opacity="0.5"/>
+                                <!-- Blade shine -->
+                                <path d="M11.5 4 L11.5 13" stroke="white" stroke-width="0.3" opacity="0.4"/>
+                            </svg>
+                        </span>
+                        <p class="person-name">Silas Zanetti</p>
+                        <p class="person-title">The Father</p>
+                        <p class="emblem-description">The Precision of Power</p>
+                    </div>
+                </div>
+                <div class="person">
+                    <div class="person-details">
+                         <span class="person-emblem" title="The Mother's Emblem: Star of David">
+                            <svg viewBox="0 0 24 24">
+                                <!-- Simplified Interwoven Star of David -->
+                                <!-- Upward triangle -->
+                                <path d="M12 3 L20 17 L16 17 L12 9 L8 17 L4 17 Z M10 17 L14 17 L12 13 Z" 
+                                      fill="#C9A961" fill-rule="evenodd"/>
+                                <!-- Downward triangle (with slight transparency for depth) -->
+                                <path d="M12 21 L4 7 L8 7 L12 15 L16 7 L20 7 Z M10 7 L14 7 L12 11 Z" 
+                                      fill="#C9A961" fill-rule="evenodd" opacity="0.85"/>
+                            </svg>
+                        </span>
+                        <p class="person-name">Madeline David</p>
+                        <p class="person-title">The Mother</p>
+                        <p class="emblem-description">The Anchor of Heritage</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="generation">
+            <div class="person" style="padding-top: 30px;">
+                <div class="person-details">
+                    <span class="person-emblem" title="The Saint's Emblem: A Chess King">
+                        <svg viewBox="0 0 24 24">
+                            <!-- Chess King with cross on top -->
+                            <!-- Cross on top -->
+                            <path d="M11 2 L13 2 L13 4 L14 4 L14 5 L13 5 L13 7 L11 7 L11 5 L10 5 L10 4 L11 4 Z" fill="#C9A961"/>
+                            <!-- Crown -->
+                            <path d="M8 7 L16 7 L15 9 L14 8 L13 9 L12 8 L11 9 L10 8 L9 9 Z" fill="#C9A961"/>
+                            <!-- Neck -->
+                            <path d="M10 9 L14 9 L13 11 L11 11 Z" fill="#C9A961"/>
+                            <!-- Upper body with decorative band -->
+                            <path d="M9 11 L15 11 L15 13 L9 13 Z" fill="#C9A961" opacity="0.9"/>
+                            <rect x="9" y="12" width="6" height="1" fill="#C9A961"/>
+                            <!-- Middle section -->
+                            <path d="M8 13 L16 13 L15 16 L9 16 Z" fill="#C9A961" opacity="0.95"/>
+                            <!-- Lower section -->
+                            <path d="M9 16 L15 16 L16 19 L8 19 Z" fill="#C9A961"/>
+                            <!-- Base -->
+                            <rect x="6" y="19" width="12" height="2" rx="0.5" fill="#C9A961"/>
+                        </svg>
+                    </span>
+                    <p class="person-name">Lucius Zanetti</p>
+                    <p class="person-title">The Saint</p>
+                    <p class="emblem-description">The Inheritor of the Game</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Interactive emblem descriptions - works on all devices
+document.addEventListener('DOMContentLoaded', function() {
+    const personDetails = document.querySelectorAll('.person-details');
+    
+    personDetails.forEach(detail => {
+        // Handle both click and touch events for better mobile compatibility
+        const handleInteraction = function(e) {
+            e.stopPropagation();
+            e.preventDefault(); // Prevent any default mobile behaviors
+            
+            // Toggle active state
+            const wasActive = this.classList.contains('active');
+            
+            // Remove active from all cards
+            personDetails.forEach(d => d.classList.remove('active'));
+            
+            // Add active to this card if it wasn't already
+            if (!wasActive) {
+                this.classList.add('active');
+            }
+        };
+        
+        // Add both touch and click listeners for maximum compatibility
+        detail.addEventListener('click', handleInteraction);
+        detail.addEventListener('touchend', handleInteraction);
+    });
+    
+    // Close when clicking/touching outside
+    const closeAll = function(e) {
+        if (!e.target.closest('.person-details')) {
+            personDetails.forEach(d => d.classList.remove('active'));
+        }
+    };
+    
+    document.addEventListener('click', closeAll);
+    document.addEventListener('touchend', closeAll);
+});
+</script>
+
+</body>
+</html>
