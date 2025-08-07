@@ -101,7 +101,7 @@
             font-family: 'Inter', sans-serif;
             padding: 5rem 1rem;
             text-align: center;
-            overflow-x: auto; /* Allows horizontal scrolling on small screens */
+            overflow-x: hidden; /* Prevent horizontal scroll */
             min-height: 100vh;
         }
         
@@ -315,31 +315,53 @@
             }
         }
         
-        /* === MOBILE SHRINK-TO-FIT (≤ 550px) =============================== */
-        @media (max-width: 550px) {
-            /* Let the section stretch full-width and centre the column */
+        /* === PHONE PORTRAIT FIT (≤500px) — KEEP CARDS SIDE-BY-SIDE ======= */
+        @media (max-width: 500px) {
+            /* Reduce section padding on mobile */
             .family-tree-section {
                 padding: 4rem 0 6rem;
             }
             
+            /* 0. wrapper must be exactly viewport-wide */
             .family-tree {
+                display: block; /* was inline-flex */
                 width: 100%;
-                padding: 0 4vw; /* responsive side gutters (≈17px on iPhone 15 PM) */
+                padding: 0 1rem; /* slim side gutters (≈ 16px) */
+                box-sizing: border-box;
             }
             
-            /* --- CARD DIMENSIONS -------------------------------------------- */
-            .person-details {
-                flex: 1 1 0; /* flex-shrink + grow */
-                min-width: 38vw; /* 2 × 38vw + 2 × 4vw gutters ≈ 100vw */
-                max-width: 190px; /* stop runaway growth on small tablets */
-                padding: 0.8rem 0.9rem;
+            /* 1. couple row: keep side-by-side but use gap, not outer margins */
+            .couple {
+                display: flex;
+                justify-content: space-between;
+                gap: 6vw; /* space *between* the two cards (≈ 24px) */
+                padding-top: 30px;
             }
             
+            /* 2. card columns: exact half-minus-gap so 2 cards == 100% */
             .person {
-                margin: 0 4vw; /* keep equal padding left/right */
+                flex: 0 0 calc(50% - 10px); /* 10px = gap/2 */
+                margin: 0; /* kill old ±20px margins */
             }
             
-            /* --- TYPOGRAPHY SCALE ------------------------------------------- */
+            /* Single person (Nasir) needs centering */
+            .generation > .person:only-child {
+                margin: 0 auto;
+                flex: 0 0 auto;
+            }
+            
+            .person-details {
+                min-width: 0; /* allow full shrink - overrides the 220px desktop min */
+                padding: 1rem 1rem;
+            }
+            
+            /* 3. keep bar the same width as the two cards */
+            .couple::before {
+                left: 0;
+                right: 0; /* span full row width, now = 100% */
+            }
+            
+            /* 4. tasteful down-size so text never wraps */
             .person-emblem {
                 width: 24px;
                 height: 24px;
@@ -352,33 +374,27 @@
             }
             
             .person-name {
-                font-size: 1.15rem;
+                font-size: 1.2rem;
             }
             
             .person-title {
-                font-size: 0.68rem;
+                font-size: 0.7rem;
             }
             
             .emblem-description {
                 font-size: 0.65rem;
             }
             
-            /* --- LINE LENGTHS ---------------------------------------------- */
+            /* 5. slightly shorter vertical connectors for tighter rhythm */
             .person.has-descendant::after,
             .couple.has-descendant::after {
-                bottom: -52px;
-                height: 52px;
+                height: 60px;
+                bottom: -60px;
             }
             
-            /* Reduce generation spacing a hair to keep everything on screen */
+            /* Adjust generation spacing for mobile */
             .generation {
-                margin-bottom: 68px;
-            }
-            
-            /* Marriage rings slightly smaller */
-            .marriage-icon svg {
-                width: 20px;
-                height: 20px;
+                margin-bottom: 60px;
             }
         }
     </style>
