@@ -9,90 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         /* --- Core Styles for the Family Tree Container --- */
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
             margin: 0;
             padding: 0;
             background-color: #0a0a0a;
-        }
-        
-        /* === PHONE PORTRAIT FIT (≤500px) — KEEP CARDS SIDE-BY-SIDE ======= */
-        @media (max-width: 500px) {
-            /* 1. give the wrapper the full viewport width */
-            .family-tree {
-                display: block; /* was inline-flex – this kills the auto-widening */
-                width: 100%;
-                padding: 0 3vw; /* slim side gutters (≈12-15px) */
-                box-sizing: border-box;
-            }
-            
-            /* 2. couple row keeps bar + ring but drops outer margins */
-            .couple {
-                display: flex;
-                justify-content: space-between;
-                gap: 6vw; /* space *between* the two cards (≈24px) */
-                padding-top: 30px;
-            }
-            
-            .person {
-                margin: 0;
-                flex: 1 1 0;
-            } /* no side margins, cards share the row */
-            
-            /* Single person (Nasir) needs centering */
-            .generation > .person:only-child {
-                margin: 0 auto;
-                flex: 0 0 auto;
-            }
-            
-            /* 3. card width = calc(50% – gap/2) so 2 cards == 100% */
-            .person-details {
-                width: 100%;
-                min-width: 0; /* allow full shrink */
-                box-sizing: border-box; /* borders counted in the math */
-                padding: 1rem 1rem;
-            }
-            
-            /* 4. keep horizontal bar flush with card edges */
-            .couple::before {
-                left: 0;
-                right: 0;
-            }
-            
-            /* 5. micro-downsize icons & text so nothing wraps */
-            .person-emblem {
-                width: 24px;
-                height: 24px;
-                top: -12px;
-            }
-            
-            .person-emblem svg {
-                width: 20px;
-                height: 20px;
-            }
-            
-            .person-name {
-                font-size: 1.2rem;
-            }
-            
-            .person-title {
-                font-size: 0.7rem;
-            }
-            
-            .emblem-description {
-                font-size: 0.65rem;
-            }
-            
-            /* Adjust generation spacing for mobile */
-            .generation {
-                margin-bottom: 60px;
-            }
-            
-            /* Shorter vertical lines on mobile */
-            .person.has-descendant::after,
-            .couple.has-descendant::after {
-                bottom: -60px;
-                height: 60px;
-            }
+            overflow-x: hidden;
         }
         
         .family-tree-section {
@@ -101,7 +26,7 @@
             font-family: 'Inter', sans-serif;
             padding: 5rem 1rem;
             text-align: center;
-            overflow-x: auto; /* Allows horizontal scrolling on small screens */
+            overflow-x: hidden;
             min-height: 100vh;
         }
         
@@ -129,7 +54,7 @@
         
         /* --- Main Tree Structure --- */
         .family-tree {
-            display: inline-flex; /* Use inline-flex to allow scrolling */
+            display: inline-flex;
             flex-direction: column;
             align-items: center;
             padding: 2rem;
@@ -138,7 +63,7 @@
         .generation {
             display: flex;
             justify-content: center;
-            margin-bottom: 80px; /* Space between generations */
+            margin-bottom: 80px;
             position: relative;
         }
         
@@ -146,7 +71,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 0 20px; /* Space between people in a couple */
+            margin: 0 20px;
             position: relative;
         }
         
@@ -165,14 +90,14 @@
         .couple {
             display: flex;
             position: relative;
-            padding-top: 30px; /* Space for the line from parent */
+            padding-top: 30px;
         }
         
         /* Horizontal line connecting a couple */
         .couple::before {
             content: '';
             position: absolute;
-            top: 55px; /* Aligns with the middle of the person box */
+            top: 55px;
             left: 0;
             right: 0;
             height: 2px;
@@ -195,12 +120,12 @@
         /* Marriage emblem floating on the connector bar */
         .marriage-icon {
             position: absolute;
-            top: 55px; /* exactly matches .couple::before top */
+            top: 55px;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #0a0a0a; /* same backdrop as person boxes */
-            padding: 0 4px; /* gives the SVG breathing room */
-            z-index: 2; /* floats above the connector */
+            background: #0a0a0a;
+            padding: 0 4px;
+            z-index: 2;
             transition: transform 0.3s ease;
         }
         
@@ -217,15 +142,15 @@
         
         .person-details {
             border: 1px solid #C9A961;
-            padding: 1.2rem 1.5rem;
+            padding: 3rem 1.5rem 1.2rem 1.5rem;
             min-width: 220px;
             background-color: #0a0a0a;
             position: relative;
-            z-index: 1; /* Keep details above lines */
+            z-index: 1;
             transition: all 0.3s ease;
-            touch-action: manipulation; /* Prevents delay on all devices */
+            touch-action: manipulation;
             cursor: pointer;
-            -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* Remove blue highlight on mobile */
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         }
         
         .person-details:hover {
@@ -236,21 +161,21 @@
         
         .person-emblem {
             position: absolute;
-            top: -15px;
+            top: -35px;
             left: 50%;
             transform: translateX(-50%);
             background-color: #0a0a0a;
-            padding: 0 12px;
-            width: 30px;
-            height: 30px;
+            padding: 0 15px;
+            width: 70px;
+            height: 70px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         
         .person-emblem svg {
-            width: 24px;
-            height: 24px;
+            width: 55px;
+            height: 55px;
             fill: #C9A961;
         }
         
@@ -282,7 +207,7 @@
             transition: all 0.4s ease;
             margin-top: 0.5rem;
             letter-spacing: 0.05em;
-            pointer-events: none; /* Prevent description from interfering with clicks */
+            pointer-events: none;
         }
         
         /* Show emblem description on hover - desktop only */
@@ -315,67 +240,87 @@
             }
         }
         
-        /* === MOBILE SHRINK-TO-FIT (≤ 550px) =============================== */
-        @media (max-width: 550px) {
-            /* Let the section stretch full-width and centre the column */
+        /* === MOBILE (≤ 500px) =============================== */
+        @media (max-width: 500px) {
             .family-tree-section {
                 padding: 4rem 0 6rem;
             }
             
             .family-tree {
+                display: block;
                 width: 100%;
-                padding: 0 4vw; /* responsive side gutters (≈17px on iPhone 15 PM) */
+                padding: 0 1rem;
+                box-sizing: border-box;
             }
             
-            /* --- CARD DIMENSIONS -------------------------------------------- */
-            .person-details {
-                flex: 1 1 0; /* flex-shrink + grow */
-                min-width: 38vw; /* 2 × 38vw + 2 × 4vw gutters ≈ 100vw */
-                max-width: 190px; /* stop runaway growth on small tablets */
-                padding: 0.8rem 0.9rem;
+            .couple {
+                display: flex;
+                justify-content: center;
+                gap: 15px;
+                padding-top: 30px;
+                width: 100%;
             }
             
             .person {
-                margin: 0 4vw; /* keep equal padding left/right */
+                flex: 1 1 0;
+                margin: 0;
+                min-width: 0;
             }
             
-            /* --- TYPOGRAPHY SCALE ------------------------------------------- */
+            /* Single person (Nasir) needs centering */
+            .generation > .person:only-child {
+                margin: 0 auto;
+                flex: 0 0 auto;
+            }
+            
+            .person-details {
+                min-width: 0;
+                width: 100%;
+                padding: 2.2rem 0.8rem 0.9rem 0.8rem;
+                box-sizing: border-box;
+                word-break: break-word;
+            }
+            
+            .couple::before {
+                left: 0;
+                right: 0;
+            }
+            
             .person-emblem {
-                width: 24px;
-                height: 24px;
-                top: -12px;
+                width: 50px;
+                height: 50px;
+                top: -25px;
             }
             
             .person-emblem svg {
-                width: 20px;
-                height: 20px;
+                width: 40px;
+                height: 40px;
             }
             
             .person-name {
-                font-size: 1.15rem;
+                font-size: 1.2rem;
+                white-space: normal;
+                word-wrap: break-word;
             }
             
             .person-title {
-                font-size: 0.68rem;
+                font-size: 0.7rem;
             }
             
             .emblem-description {
                 font-size: 0.65rem;
             }
             
-            /* --- LINE LENGTHS ---------------------------------------------- */
             .person.has-descendant::after,
             .couple.has-descendant::after {
-                bottom: -52px;
-                height: 52px;
+                height: 60px;
+                bottom: -60px;
             }
             
-            /* Reduce generation spacing a hair to keep everything on screen */
             .generation {
-                margin-bottom: 68px;
+                margin-bottom: 60px;
             }
             
-            /* Marriage rings slightly smaller */
             .marriage-icon svg {
                 width: 20px;
                 height: 20px;
@@ -554,7 +499,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Handle both click and touch events for better mobile compatibility
         const handleInteraction = function(e) {
             e.stopPropagation();
-            e.preventDefault(); // Prevent any default mobile behaviors
+            e.preventDefault();
             
             // Toggle active state
             const wasActive = this.classList.contains('active');
